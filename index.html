@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ritmo de Obra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root{
+    --bg:#F1F5F1;
+    --surface:#FFFFFF;
+    --surface-2:#F6F9F6;
+    --ink:#1B241D;
+    --muted:#5B6B5F;
+    --line:#DBE6DD;
+    --accent:#1F4E2C;
+    --accent-ink:#FFFFFF;
+    --accent-wash:#E1EDE4;
+    --good:#2E9A57;
+    --good-bg:#E3F4E9;
+    --warn:#B07C17;
+    --warn-bg:#FAF0D8;
+    --bad:#C6423A;
+    --bad-bg:#FAE6E4;
+    --info:#3A6FC0;
+    --info-bg:#E6EDFA;
+    --lock:#8A5A20;
+    --lock-bg:#F6E9D4;
+    --shadow:0 1px 2px rgba(20,30,20,.07), 0 6px 18px rgba(20,30,20,.06);
+    --radius:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#10140F;
+      --surface:#171D18;
+      --surface-2:#1D251F;
+      --ink:#E7ECE8;
+      --muted:#93A197;
+      --line:#2A332C;
+      --accent:#46A06B;
+      --accent-ink:#0D140F;
+      --accent-wash:#20362A;
+      --good:#4BC17B;
+      --good-bg:rgba(75,193,123,.14);
+      --warn:#E3AC42;
+      --warn-bg:rgba(227,172,66,.14);
+      --bad:#E56E64;
+      --bad-bg:rgba(229,110,100,.14);
+      --info:#6FA3E9;
+      --info-bg:rgba(111,163,233,.14);
+      --lock:#E3B872;
+      --lock-bg:rgba(227,184,114,.14);
+      --shadow:0 1px 2px rgba(0,0,0,.45), 0 8px 22px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#10140F;
+    --surface:#171D18;
+    --surface-2:#1D251F;
+    --ink:#E7ECE8;
+    --muted:#93A197;
+    --line:#2A332C;
+    --accent:#46A06B;
+    --accent-ink:#0D140F;
+    --accent-wash:#20362A;
+    --good:#4BC17B;
+    --good-bg:rgba(75,193,123,.14);
+    --warn:#E3AC42;
+    --warn-bg:rgba(227,172,66,.14);
+    --bad:#E56E64;
+    --bad-bg:rgba(229,110,100,.14);
+    --info:#6FA3E9;
+    --info-bg:rgba(111,163,233,.14);
+    --lock:#E3B872;
+    --lock-bg:rgba(227,184,114,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 8px 22px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  svg{width:16px;height:16px;flex:0 0 auto;vertical-align:-3px;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Barlow', Helvetica Neue, Arial, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:48px;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:0 16px;}
+
+  .topbar{
+    position:sticky;top:0;z-index:20;
+    background:var(--bg);
+    padding-top:14px;padding-bottom:10px;
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:baseline;gap:8px;margin-bottom:12px;}
+  .brand h1{
+    font-family:'Barlow Semi Condensed', Arial Narrow, sans-serif;
+    font-weight:800;font-size:21px;letter-spacing:.01em;margin:0;
+  }
+  .brand span{
+    font-family:'IBM Plex Mono', monospace;font-size:11px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.08em;
+  }
+
+  .obra-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;-ms-overflow-style:none;scrollbar-width:none;}
+  .obra-row::-webkit-scrollbar{display:none;}
+  .obra-pill{
+    flex:0 0 auto;padding:7px 13px;border-radius:999px;border:1px solid var(--line);
+    background:var(--surface);color:var(--muted);font-size:13px;font-weight:600;
+    cursor:pointer;white-space:nowrap;
+  }
+  .obra-pill.active{background:var(--ink);color:var(--surface);border-color:var(--ink);}
+  .obra-pill.add{background:transparent;border-style:dashed;color:var(--accent);display:inline-flex;align-items:center;gap:5px;}
+
+  .mode-toggle{display:flex;gap:4px;background:var(--surface-2);border-radius:11px;padding:3px;margin-top:10px;}
+  .mode-toggle button{
+    flex:1;border:none;background:transparent;padding:9px 0;border-radius:8px;
+    font-family:'Barlow Semi Condensed', sans-serif;font-weight:700;font-size:13.5px;
+    letter-spacing:.04em;text-transform:uppercase;color:var(--muted);cursor:pointer;white-space:nowrap;
+  }
+  .mode-toggle button.active{background:var(--surface);color:var(--ink);box-shadow:var(--shadow);}
+
+  main{padding-top:16px;}
+  .empty{text-align:center;color:var(--muted);padding:56px 20px;font-size:14.5px;line-height:1.6;}
+  .empty strong{display:block;color:var(--ink);font-size:16px;margin-bottom:6px;font-weight:700;}
+  .empty.small{padding:24px 8px;}
+
+  .setup{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 20px;line-height:1.65;font-size:14px;}
+  .setup h2{font-family:'Barlow Semi Condensed',sans-serif;font-size:19px;margin:0 0 4px;}
+  .setup p{color:var(--muted);margin:0 0 14px;}
+  .setup ol{margin:0;padding-left:20px;}
+  .setup li{margin-bottom:10px;}
+  .setup code{background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;}
+
+  .section-label{
+    font-family:'IBM Plex Mono', monospace;font-size:11px;text-transform:uppercase;
+    letter-spacing:.09em;color:var(--muted);margin:22px 0 8px;
+  }
+  .section-label:first-child{margin-top:0;}
+
+  .week-card{
+    background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:18px;display:flex;align-items:center;gap:18px;margin-bottom:12px;
+  }
+  .ring{
+    --pct:0;width:74px;height:74px;border-radius:50%;flex:0 0 auto;
+    background:conic-gradient(var(--ring-color, var(--good)) calc(var(--pct)*1%), var(--line) 0);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .ring-inner{
+    width:56px;height:56px;border-radius:50%;background:var(--surface);
+    display:flex;align-items:center;justify-content:center;flex-direction:column;
+  }
+  .ring-inner b{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;}
+  .ring-inner small{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;}
+  .week-meta .wk-title{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:16px;}
+  .week-meta .wk-range{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em;}
+  .week-meta .wk-count{font-size:13px;color:var(--muted);margin-top:4px;}
+
+  .toolbar-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .toolbar-row .btn{font-size:12.5px;padding:8px 12px;}
+
+  .item-card{
+    background:var(--surface);border-radius:12px;box-shadow:var(--shadow);
+    padding:14px 15px;margin-bottom:10px;border-left:4px solid var(--line);position:relative;
+  }
+  .item-card.st-good{border-left-color:var(--good);}
+  .item-card.st-bad{border-left-color:var(--bad);}
+  .item-card.st-partial{border-left-color:var(--warn);}
+  .item-card.st-pending{border-left-color:var(--line);}
+  .item-card.selecting{outline:2px solid var(--accent);outline-offset:-2px;}
+  .item-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}
+  .item-name{font-weight:700;font-size:15.5px;line-height:1.3;}
+  .item-tags{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.02em;}
+  .item-meta{font-size:12.5px;color:var(--muted);margin-top:5px;}
+  .badge-row{display:flex;flex-direction:column;gap:4px;align-items:flex-end;}
+  .badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
+  .badge.good{background:var(--good-bg);color:var(--good);}
+  .badge.bad{background:var(--bad-bg);color:var(--bad);}
+  .badge.warn{background:var(--warn-bg);color:var(--warn);}
+  .badge.lock{background:var(--lock-bg);color:var(--lock);}
+  .badge.roll{background:var(--surface-2);color:var(--muted);border:1px solid var(--line);}
+
+  .actions{display:flex;gap:6px;margin-top:11px;}
+  .actions button{
+    flex:1;padding:10px 2px;border-radius:9px;border:1.5px solid var(--line);
+    background:var(--surface);font-weight:700;font-size:12.5px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:5px;color:var(--muted);white-space:nowrap;
+  }
+  .actions button svg{width:14px;height:14px;flex:0 0 auto;}
+  .actions button.ok.on{background:var(--good-bg);border-color:var(--good);color:var(--good);}
+  .actions button.partial.on{background:var(--warn-bg);border-color:var(--warn);color:var(--warn);}
+  .actions button.no.on{background:var(--bad-bg);border-color:var(--bad);color:var(--bad);}
+
+  .inline-qty{display:flex;gap:8px;margin-top:10px;align-items:center;}
+  .inline-qty input{width:100px;flex:0 0 auto;}
+  .inline-qty span{font-size:12.5px;color:var(--muted);}
+
+  .reason-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center;}
+  .chip{
+    padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);
+    font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer;
+  }
+  .chip.on{background:var(--accent-wash);border-color:var(--accent);color:var(--accent);}
+  .chip.impedimento{border-style:dashed;}
+  .chip.impedimento.on{background:var(--lock-bg);border-color:var(--lock);color:var(--lock);}
+
+  .select-checkbox{position:absolute;top:12px;right:12px;width:22px;height:22px;accent-color:var(--accent);}
+
+  .card-plain{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:12px;}
+  .banner{background:var(--accent-wash);border:1px solid var(--accent);color:var(--accent);border-radius:12px;padding:12px 14px;font-size:13px;margin-bottom:14px;line-height:1.5;}
+
+  .gest-tabs{display:flex;gap:16px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;}
+  .gest-tabs::-webkit-scrollbar{display:none;}
+  .gest-tabs button{
+    background:none;border:none;padding:8px 0 10px;font-family:'Barlow Semi Condensed',sans-serif;
+    font-weight:700;font-size:13.5px;letter-spacing:.02em;color:var(--muted);cursor:pointer;
+    border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:0 0 auto;
+  }
+  .gest-tabs button.active{color:var(--accent);border-color:var(--accent);}
+
+  .row-between{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .btn{
+    padding:9px 15px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);
+    font-weight:700;font-size:13px;cursor:pointer;color:var(--ink);
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  }
+  .btn-accent{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+  .btn-warn{background:var(--warn);border-color:var(--warn);color:#fff;}
+  .btn-ghost{border-color:transparent;background:transparent;color:var(--muted);text-decoration:underline;padding:4px 2px;}
+  .btn-ghost.danger{color:var(--bad);}
+
+  .pmp-row{background:var(--surface);border-radius:12px;box-shadow:var(--shadow);padding:13px 15px;margin-bottom:9px;}
+  .pmp-row .pn{font-weight:700;font-size:15px;}
+  .pmp-row .pm{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.02em;}
+  .pmp-row .pr{font-size:12.5px;color:var(--lock);margin-top:5px;background:var(--lock-bg);display:inline-block;padding:2px 8px;border-radius:6px;}
+  .pmp-row .actions-inline{display:flex;gap:14px;margin-top:9px;}
+
+  form.editor{display:flex;flex-direction:column;gap:9px;margin-top:2px;}
+  .field-pair{display:flex;gap:9px;}
+  .field-pair > div{flex:1;}
+  label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+  input[type=text],input[type=number],input[type=date],select{
+    width:100%;padding:9px 10px;border-radius:8px;border:1.5px solid var(--line);
+    background:var(--surface-2);color:var(--ink);font-size:14px;font-family:'Barlow',sans-serif;
+  }
+  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .editor-actions{display:flex;gap:8px;margin-top:4px;}
+
+  .check-row{display:flex;align-items:flex-start;gap:11px;padding:11px 0;border-bottom:1px solid var(--line);}
+  .check-row:last-child{border-bottom:none;}
+  .check-row input[type=checkbox]{width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex:0 0 auto;}
+  .check-row .cn{font-weight:700;font-size:14.5px;}
+  .check-row .cm{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;margin-top:2px;}
+  .check-row .meta-qty{display:flex;align-items:center;gap:6px;margin-top:7px;}
+  .check-row .meta-qty input{width:100px;}
+  .check-row .meta-qty span{font-size:12px;color:var(--muted);}
+  .check-row .locked-note{font-size:11.5px;color:var(--muted);margin-top:6px;font-style:italic;}
+
+  .hist-row{margin-bottom:14px;}
+  .hist-top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;}
+  .hist-top .range{font-family:'IBM Plex Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;}
+  .hist-top .pct{font-family:'IBM Plex Mono',monospace;font-weight:600;font-variant-numeric:tabular-nums;}
+  .track{height:10px;border-radius:6px;background:var(--surface-2);overflow:hidden;}
+  .fill{height:100%;border-radius:6px;}
+
+  .pareto-row{margin-bottom:12px;}
+  .pareto-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;}
+  .pareto-top .n{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--muted);}
+
+  .restr-row{background:var(--surface);border-radius:12px;box-shadow:var(--shadow);padding:13px 15px;margin-bottom:9px;}
+  .restr-row .rn{font-weight:700;font-size:14.5px;}
+  .restr-row .rs{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;}
+  .restr-row .rd{font-size:13px;margin-top:6px;color:var(--ink);}
+  .restr-row .actions-inline{display:flex;gap:14px;margin-top:9px;}
+
+  .add-obra-form{display:flex;gap:8px;margin-top:10px;}
+  .add-obra-form input{flex:1;}
+
+  @media (max-width:420px){
+    .field-pair{flex-direction:column;}
+    .actions button{font-size:11px;padding:9px 1px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><h1>RITMO</h1><span>de obra &middot; PCP / PMP</span></div>
+    <div class="obra-row" id="obraRow"></div>
+    <div id="addObraSlot"></div>
+    <div class="mode-toggle">
+      <button data-action="set-mode" data-mode="campo" id="btnCampo">Campo</button>
+      <button data-action="set-mode" data-mode="gestao" id="btnGestao">Gestão</button>
+    </div>
+  </div>
+  <main id="main"></main>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import {
+    getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, getDoc, getDocs,
+    onSnapshot, query, where as fsWhere, orderBy as fsOrderBy, limit as fsLimit
+  } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+  // ============================================================
+  //  CONFIGURAÇÃO DO FIREBASE — preencha antes de publicar
+  // ------------------------------------------------------------
+  //  1. Acesse https://console.firebase.google.com e crie um
+  //     projeto novo (gratuito), ex: "beng-ritmo-de-obra".
+  //  2. Nele, clique em "Adicionar app" > ícone Web (</>) e
+  //     registre um app. O console mostra um objeto igual ao
+  //     abaixo — copie e cole no lugar de FIREBASE_CONFIG.
+  //  3. No menu Build > Firestore Database, clique em
+  //     "Criar banco de dados" e escolha "Iniciar em modo de
+  //     teste" (permite leitura/escrita por 30 dias; depois
+  //     ajuste as regras em Firestore > Regras, por exemplo:
+  //       allow read, write: if true;   // uso interno, sem login
+  //  4. Suba este arquivo (index.html) num repositório GitHub e
+  //     ative o GitHub Pages em Settings > Pages.
+  // ============================================================
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBnYSOaypV5_fFuZmc7WMU9cDY4X0RYK-w",
+    authDomain: "beng-ritmodeobra.firebaseapp.com",
+    projectId: "beng-ritmodeobra",
+    storageBucket: "beng-ritmodeobra.firebasestorage.app",
+    messagingSenderId: "448031655420",
+    appId: "1:448031655420:web:f6e1d74e6b79f2e4d4de79"
+  };
+  // ============================================================
+
+  var IS_CONFIGURED = FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey.indexOf('COLE_AQUI') === -1;
+  var firestoreDb = null;
+  if(IS_CONFIGURED){
+    try{
+      var fbApp = initializeApp(FIREBASE_CONFIG);
+      firestoreDb = getFirestore(fbApp);
+    } catch(e){ IS_CONFIGURED = false; console.error(e); }
+  }
+
+  // Camada de compatibilidade: API encadeável parecida com a do
+  // Firestore, para o resto do app não se importar com a sintaxe
+  // modular do SDK.
+  function makeDb(fsdb){
+    function docRef(path){
+      var ref = doc(fsdb, path);
+      return {
+        id: ref.id,
+        path: path,
+        get: function(){
+          return getDoc(ref).then(function(snap){
+            return { exists: snap.exists(), id: snap.id, data: function(){ return snap.data(); } };
+          });
+        },
+        set: function(data){ return setDoc(ref, data); },
+        update: function(data){ return updateDoc(ref, data); },
+        delete: function(){ return deleteDoc(ref); },
+        onSnapshot: function(cb, errCb){
+          return onSnapshot(ref, function(snap){
+            cb({ exists: snap.exists(), id: snap.id, data: function(){ return snap.data(); } });
+          }, errCb);
+        }
+      };
+    }
+    function collRef(path){
+      var base = collection(fsdb, path);
+      var constraints = [];
+      var api = {
+        where: function(field, op, val){ constraints.push(fsWhere(field, op, val)); return api; },
+        orderBy: function(field, dir){ constraints.push(fsOrderBy(field, dir||'asc')); return api; },
+        limit: function(n){ constraints.push(fsLimit(n)); return api; },
+        onSnapshot: function(cb, errCb){
+          var q = query.apply(null, [base].concat(constraints));
+          return onSnapshot(q, function(snap){
+            cb({ docs: snap.docs.map(function(d){ return { id: d.id, exists:true, data: function(){ return d.data(); } }; }) });
+          }, errCb);
+        },
+        get: function(){
+          var q = query.apply(null, [base].concat(constraints));
+          return getDocs(q).then(function(snap){
+            return { docs: snap.docs.map(function(d){ return { id: d.id, exists:true, data: function(){ return d.data(); } }; }) };
+          });
+        },
+        add: function(data){ return addDoc(base, data).then(function(ref){ return { id: ref.id }; }); },
+        doc: function(id){ return docRef(path+'/'+id); }
+      };
+      return api;
+    }
+    return { doc: docRef, collection: collRef };
+  }
+
+  // ---------- date helpers ----------
+  var MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function isoDate(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+  function mondayOf(d){
+    var date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    var day = (date.getDay()+6)%7;
+    date.setDate(date.getDate()-day);
+    return date;
+  }
+  function addDays(d,n){ var r=new Date(d); r.setDate(r.getDate()+n); return r; }
+  function fmtRange(monday){
+    var sunday = addDays(monday,6);
+    if(monday.getMonth()===sunday.getMonth()){
+      return monday.getDate()+'–'+sunday.getDate()+' '+MESES[sunday.getMonth()];
+    }
+    return monday.getDate()+' '+MESES[monday.getMonth()]+' – '+sunday.getDate()+' '+MESES[sunday.getMonth()];
+  }
+  function fmtShortDate(iso){
+    if(!iso) return '';
+    var p = iso.split('-');
+    return p[2]+'/'+p[1];
+  }
+
+  // ---------- state ----------
+  var state = {
+    obras: [],
+    obraId: null,
+    mode: 'campo',
+    gestTab: 'pmp',
+    pmp: [],
+    restricoes: [],
+    ocorrenciasSemanaAtual: [],   // para o Campo
+    ocorrenciasGest: [],          // para a aba Semana da Gestão (semana selecionada)
+    gestWeekOffset: 0,            // 0 = esta semana, 1 = próxima
+    historicoOcorrencias: [],
+    showAddObra: false,
+    showAddPmp: false,
+    editingPmpId: null,
+    showAddRestricao: false,
+    checklistSel: {},             // pmpId -> {checked, meta}
+    chuvaMode: false,
+    chuvaSel: {},                 // ocorrenciaId -> true
+    partialEditing: {},           // ocorrenciaId -> true (mostrando input de quantidade)
+    rollingUp: false,
+  };
+
+  var db = null;
+  var unsub = { obras:null, pmp:null, restricoes:null, semanaAtual:null, semanaGest:null, historico:null };
+
+  var ICONS = {
+    check: '<svg viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4 4 8-9" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    x: '<svg viewBox="0 0 20 20" fill="none"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>',
+    plus: '<svg viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+    half: '<svg viewBox="0 0 20 20" fill="none"><path d="M10 3a7 7 0 000 14V3z" fill="currentColor"/><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>',
+    lock: '<svg viewBox="0 0 20 20" fill="none"><rect x="5" y="9" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><path d="M7 9V6.5a3 3 0 016 0V9" stroke="currentColor" stroke-width="1.7" fill="none"/></svg>',
+    rain: '<svg viewBox="0 0 20 20" fill="none"><path d="M5 8a3.5 3.5 0 010-7c.3 0 .6 0 .9.1A4.5 4.5 0 0114 3a3.5 3.5 0 011 6.9" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M6 12l-1 3M10 12l-1 3M14 12l-1 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'
+  };
+
+  var REASONS = ['Falta de material','Falta de mão de obra','Chuva','Equipamento parado','Atividade predecessora','Outro motivo'];
+
+  // ---------- db wiring ----------
+  function init(){
+    if(!IS_CONFIGURED){ renderSetupNeeded(); return; }
+    db = makeDb(firestoreDb);
+    unsub.obras = db.collection('obras').orderBy('criadoEm','asc').onSnapshot(function(snap){
+      state.obras = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      if(!state.obraId && state.obras.length){ selectObra(state.obras[0].id); }
+      render();
+    }, function(err){ renderConnError(err); });
+    render();
+  }
+
+  function renderSetupNeeded(){
+    document.getElementById('main').innerHTML =
+      '<div class="setup"><h2>Falta configurar o Firebase</h2>' +
+      '<p>O Ritmo de Obra guarda os dados no Firestore para ficarem sincronizados entre o seu celular e o dos funcionários. Antes de usar, complete a configuração no início do arquivo (procure por <code>FIREBASE_CONFIG</code>):</p>' +
+      '<ol>' +
+      '<li>Crie um projeto gratuito em <code>console.firebase.google.com</code>.</li>' +
+      '<li>Adicione um app Web (ícone <code>&lt;/&gt;</code>) e copie o objeto de configuração para o lugar de <code>FIREBASE_CONFIG</code> no código.</li>' +
+      '<li>Em <code>Build &rarr; Firestore Database</code>, crie o banco em modo de teste.</li>' +
+      '<li>Suba o arquivo para um repositório do GitHub e ative o GitHub Pages.</li>' +
+      '</ol></div>';
+  }
+  function renderConnError(err){
+    document.getElementById('main').innerHTML =
+      '<div class="empty"><strong>Não foi possível conectar ao Firestore</strong>Confira se o projeto e as regras do Firestore estão corretos.<br>('+(err&&err.message?err.message:'erro desconhecido')+')</div>';
+  }
+
+  function selectObra(id){
+    state.obraId = id;
+    state.showAddPmp = false; state.editingPmpId = null; state.checklistSel = {};
+    state.showAddRestricao = false; state.chuvaMode = false; state.chuvaSel = {}; state.partialEditing = {};
+    ['pmp','restricoes','semanaAtual','semanaGest','historico'].forEach(function(k){ if(unsub[k]) unsub[k](); });
+    if(!id){ state.pmp=[]; state.restricoes=[]; state.ocorrenciasSemanaAtual=[]; state.ocorrenciasGest=[]; state.historicoOcorrencias=[]; render(); return; }
+
+    unsub.pmp = db.collection('obras/'+id+'/pmp').orderBy('inicio','asc').onSnapshot(function(snap){
+      state.pmp = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      render();
+    });
+
+    unsub.restricoes = db.collection('obras/'+id+'/restricoes').orderBy('criadoEm','desc').onSnapshot(function(snap){
+      state.restricoes = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      render();
+    });
+
+    var thisWeekId = isoDate(mondayOf(new Date()));
+    unsub.semanaAtual = db.collection('obras/'+id+'/ocorrencias').where('semanaId','==',thisWeekId).onSnapshot(function(snap){
+      state.ocorrenciasSemanaAtual = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      render();
+    });
+
+    subscribeGestWeek();
+
+    unsub.historico = db.collection('obras/'+id+'/ocorrencias').orderBy('semanaId','desc').limit(200).onSnapshot(function(snap){
+      state.historicoOcorrencias = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      render();
+    });
+
+    // rolagem automática e idempotente de pendências de semanas passadas
+    rolarPendenciasAtrasadas(id);
+  }
+
+  function subscribeGestWeek(){
+    if(!state.obraId) return;
+    if(unsub.semanaGest) unsub.semanaGest();
+    var wid = isoDate(mondayOf(addDays(new Date(), state.gestWeekOffset*7)));
+    unsub.semanaGest = db.collection('obras/'+state.obraId+'/ocorrencias').where('semanaId','==',wid).onSnapshot(function(snap){
+      state.ocorrenciasGest = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      syncChecklistFromWeek();
+      render();
+    });
+  }
+
+  function syncChecklistFromWeek(){
+    var sel = {};
+    var existing = {};
+    state.ocorrenciasGest.forEach(function(o){ existing[o.pmpId] = o; });
+    state.pmp.forEach(function(p){
+      var ex = existing[p.id];
+      sel[p.id] = { checked: !!ex, meta: ex ? ex.quantidadeMeta : (p.quantidade || '') };
+    });
+    state.checklistSel = sel;
+  }
+
+  // ---------- rolagem automática ----------
+  function rolarPendenciasAtrasadas(obraId){
+    var hojeMonday = mondayOf(new Date());
+    var anteriorMonday = addDays(hojeMonday, -7);
+    var anteriorId = isoDate(anteriorMonday);
+    var hojeId = isoDate(hojeMonday);
+    db.collection('obras/'+obraId+'/ocorrencias').where('semanaId','==',anteriorId).get().then(function(snap){
+      var pendentes = snap.docs
+        .map(function(d){ return Object.assign({id:d.id}, d.data()); })
+        .filter(function(o){ return o.status !== 'concluido' && !o.rolado; });
+      if(!pendentes.length) return;
+      pendentes.forEach(function(o){
+        var meta = Number(o.quantidadeMeta)||0;
+        var exec = Number(o.quantidadeExecutada)||0;
+        var restante = meta - exec;
+        var tasks = [ db.doc('obras/'+obraId+'/ocorrencias/'+o.id).update({ rolado: true }) ];
+        if(restante > 0){
+          tasks.push(db.collection('obras/'+obraId+'/ocorrencias').add({
+            pmpId: o.pmpId, servico: o.servico, frente: o.frente, responsavel: o.responsavel,
+            semanaId: hojeId, quantidadeMeta: restante, quantidadeExecutada: 0,
+            status: 'pendente', motivoCategoria: null, impedimentoExterno: null,
+            rolagemDe: o.id, numeroRolagens: (o.numeroRolagens||0)+1,
+            criadoEm: new Date().toISOString(), atualizadoEm: new Date().toISOString()
+          }));
+        }
+        Promise.all(tasks).catch(function(e){ console.error('rollover falhou', e); });
+      });
+    }).catch(function(e){ console.error('checagem de rolagem falhou', e); });
+  }
+
+  // ---------- actions ----------
+  function setMode(m){ state.mode = m; render(); }
+
+  function addObra(nome){
+    if(!nome || !nome.trim()) return;
+    db.collection('obras').add({ nome: nome.trim(), criadoEm: new Date().toISOString() }).then(function(ref){
+      state.showAddObra = false;
+      selectObra(ref.id);
+    });
+  }
+
+  function savePmp(data, id){
+    var body = {
+      servico: data.servico.trim(),
+      frente: (data.frente||'').trim(),
+      responsavel: (data.responsavel||'').trim(),
+      unidade: (data.unidade||'').trim(),
+      quantidade: data.quantidade ? Number(data.quantidade) : null,
+      inicio: data.inicio || '',
+      fim: data.fim || '',
+    };
+    var col = db.collection('obras/'+state.obraId+'/pmp');
+    if(id){ col.doc(id).update(body); }
+    else { body.criadoEm = new Date().toISOString(); col.add(body); }
+    state.showAddPmp = false; state.editingPmpId = null;
+    render();
+  }
+  function removePmp(id){ db.collection('obras/'+state.obraId+'/pmp').doc(id).delete(); }
+
+  function saveRestricao(data){
+    if(!data.pmpId || !data.descricao.trim()) return;
+    var pmpItem = state.pmp.find(function(p){ return p.id===data.pmpId; });
+    db.collection('obras/'+state.obraId+'/restricoes').add({
+      pmpId: data.pmpId,
+      servico: pmpItem ? pmpItem.servico : '',
+      descricao: data.descricao.trim(),
+      responsavel: (data.responsavel||'').trim(),
+      prazo: data.prazo || '',
+      status: 'aberta',
+      criadoEm: new Date().toISOString()
+    });
+    state.showAddRestricao = false;
+    render();
+  }
+  function resolverRestricao(id, novoStatus){
+    db.collection('obras/'+state.obraId+'/restricoes').doc(id).update({
+      status: novoStatus, resolvidoEm: novoStatus==='removida' ? new Date().toISOString() : null
+    });
+  }
+
+  function toggleChecklist(pmpId){
+    var c = state.checklistSel[pmpId];
+    if(!c) return;
+    c.checked = !c.checked;
+    render();
+  }
+  function updateChecklistMeta(pmpId, val){
+    if(state.checklistSel[pmpId]) state.checklistSel[pmpId].meta = val;
+  }
+
+  function montarSemana(){
+    var wid = isoDate(mondayOf(addDays(new Date(), state.gestWeekOffset*7)));
+    var existing = {};
+    state.ocorrenciasGest.forEach(function(o){ existing[o.pmpId] = o; });
+    var ops = [];
+    state.pmp.forEach(function(p){
+      var sel = state.checklistSel[p.id];
+      var already = existing[p.id];
+      if(sel && sel.checked){
+        if(already){
+          if(already.status === 'pendente'){
+            ops.push(db.doc('obras/'+state.obraId+'/ocorrencias/'+already.id).update({ quantidadeMeta: Number(sel.meta)||0 }));
+          }
+          // se já foi marcado pelo campo, não sobrescreve — preserva o registro.
+        } else {
+          ops.push(db.collection('obras/'+state.obraId+'/ocorrencias').add({
+            pmpId: p.id, servico: p.servico, frente: p.frente, responsavel: p.responsavel,
+            semanaId: wid, quantidadeMeta: Number(sel.meta)||0, quantidadeExecutada: 0,
+            status: 'pendente', motivoCategoria: null, impedimentoExterno: null,
+            rolagemDe: null, numeroRolagens: 0,
+            criadoEm: new Date().toISOString(), atualizadoEm: new Date().toISOString()
+          }));
+        }
+      } else if(already && already.status === 'pendente'){
+        ops.push(db.doc('obras/'+state.obraId+'/ocorrencias/'+already.id).delete());
+      }
+    });
+    Promise.all(ops);
+  }
+
+  function marcarConcluido(o){
+    var novo = o.status === 'concluido' ? 'pendente' : 'concluido';
+    var meta = Number(o.quantidadeMeta)||0;
+    db.doc('obras/'+state.obraId+'/ocorrencias/'+o.id).update({
+      status: novo,
+      quantidadeExecutada: novo === 'concluido' ? meta : 0,
+      motivoCategoria: novo === 'concluido' ? null : o.motivoCategoria,
+      impedimentoExterno: novo === 'concluido' ? null : o.impedimentoExterno,
+      atualizadoEm: new Date().toISOString()
+    });
+  }
+  function marcarNaoConcluido(o){
+    var novo = o.status === 'nao_concluido' ? 'pendente' : 'nao_concluido';
+    db.doc('obras/'+state.obraId+'/ocorrencias/'+o.id).update({
+      status: novo,
+      quantidadeExecutada: 0,
+      motivoCategoria: novo === 'nao_concluido' ? o.motivoCategoria : null,
+      impedimentoExterno: novo === 'nao_concluido' ? o.impedimentoExterno : null,
+      atualizadoEm: new Date().toISOString()
+    });
+  }
+  function togglePartialEdit(ocId){
+    state.partialEditing[ocId] = !state.partialEditing[ocId];
+    render();
+  }
+  function confirmarParcial(o, qtd){
+    var n = Number(qtd);
+    if(isNaN(n) || n < 0) return;
+    db.doc('obras/'+state.obraId+'/ocorrencias/'+o.id).update({
+      status: 'parcial', quantidadeExecutada: n, atualizadoEm: new Date().toISOString()
+    });
+    state.partialEditing[o.id] = false;
+    render();
+  }
+  function setMotivo(o, motivo){
+    var novoMotivo = (o.motivoCategoria === motivo) ? null : motivo;
+    db.doc('obras/'+state.obraId+'/ocorrencias/'+o.id).update({ motivoCategoria: novoMotivo });
+  }
+  function toggleImpedimento(o){
+    db.doc('obras/'+state.obraId+'/ocorrencias/'+o.id).update({ impedimentoExterno: !o.impedimentoExterno });
+  }
+
+  function toggleChuvaMode(){
+    state.chuvaMode = !state.chuvaMode;
+    state.chuvaSel = {};
+    render();
+  }
+  function toggleChuvaSel(ocId){
+    state.chuvaSel[ocId] = !state.chuvaSel[ocId];
+    render();
+  }
+  function aplicarChuva(){
+    var ids = Object.keys(state.chuvaSel).filter(function(id){ return state.chuvaSel[id]; });
+    if(!ids.length) return;
+    var ops = ids.map(function(id){
+      return db.doc('obras/'+state.obraId+'/ocorrencias/'+id).update({
+        status: 'nao_concluido', quantidadeExecutada: 0,
+        motivoCategoria: 'Chuva', impedimentoExterno: true, atualizadoEm: new Date().toISOString()
+      });
+    });
+    Promise.all(ops).then(function(){ state.chuvaMode = false; state.chuvaSel = {}; render(); });
+  }
+
+  // ---------- rendering ----------
+  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+  function renderObraRow(){
+    var html = state.obras.map(function(o){
+      return '<button class="obra-pill '+(o.id===state.obraId?'active':'')+'" data-action="select-obra" data-id="'+o.id+'">'+esc(o.nome)+'</button>';
+    }).join('');
+    html += '<button class="obra-pill add" data-action="toggle-add-obra">'+ICONS.plus+' Obra</button>';
+    document.getElementById('obraRow').innerHTML = html;
+
+    var slot = document.getElementById('addObraSlot');
+    slot.innerHTML = state.showAddObra ? '<form class="add-obra-form" data-action="submit-add-obra"><input type="text" id="novaObraInput" placeholder="Nome da obra" autofocus /><button class="btn btn-accent" type="submit">Criar</button></form>' : '';
+
+    document.getElementById('btnCampo').className = state.mode==='campo' ? 'active' : '';
+    document.getElementById('btnGestao').className = state.mode==='gestao' ? 'active' : '';
+  }
+
+  function statusClass(o){
+    if(o.status==='concluido') return 'st-good';
+    if(o.status==='nao_concluido') return 'st-bad';
+    if(o.status==='parcial') return 'st-partial';
+    return 'st-pending';
+  }
+  function ringColor(pct){
+    if(pct>=70) return 'var(--good)';
+    if(pct>=40) return 'var(--warn)';
+    return 'var(--bad)';
+  }
+  function restricaoAbertaSet(){
+    var set = {};
+    state.restricoes.forEach(function(r){ if(r.status==='aberta') set[r.pmpId] = true; });
+    return set;
+  }
+
+  function renderCampoItem(o, locks){
+    var cls = statusClass(o);
+    var badges = '';
+    if(o.status==='concluido') badges += '<span class="badge good">Feito</span>';
+    else if(o.status==='nao_concluido') badges += '<span class="badge bad">Não feito</span>';
+    else if(o.status==='parcial') badges += '<span class="badge warn">Parcial</span>';
+    if(o.numeroRolagens>0) badges += '<span class="badge roll">'+(o.numeroRolagens+1)+'&ordf; semana seguida</span>';
+    if(locks[o.pmpId]) badges += '<span class="badge lock">'+ICONS.lock+' restrição aberta</span>';
+
+    var qtyLine = '<div class="item-meta">Meta: '+(o.quantidadeMeta!=null?o.quantidadeMeta:'—')+
+      (o.status==='parcial' ? ' &middot; executado: '+o.quantidadeExecutada : '')+'</div>';
+
+    var partialBox = '';
+    if(state.partialEditing[o.id] || (o.status==='parcial' && state.partialEditing[o.id]!==false)){
+      if(state.partialEditing[o.id]){
+        partialBox = '<div class="inline-qty"><input type="number" step="any" min="0" id="qty-'+o.id+'" value="'+(o.quantidadeExecutada||'')+'" placeholder="quantidade feita">'+
+          '<button class="btn btn-accent" data-action="confirm-partial" data-id="'+o.id+'" style="padding:8px 12px;font-size:12.5px;">Confirmar</button></div>';
+      }
+    }
+
+    var reasonRow = '';
+    if(o.status==='nao_concluido'){
+      reasonRow = '<div class="reason-row">' + REASONS.map(function(r){
+        return '<button class="chip '+(o.motivoCategoria===r?'on':'')+'" data-action="set-motivo" data-id="'+o.id+'" data-motivo="'+esc(r)+'">'+esc(r)+'</button>';
+      }).join('') + '<button class="chip impedimento '+(o.impedimentoExterno?'on':'')+'" data-action="toggle-impedimento" data-id="'+o.id+'">Impedimento externo (não depende da equipe)</button></div>';
+    }
+
+    var checkbox = state.chuvaMode && o.status!=='concluido' ? '<input type="checkbox" class="select-checkbox" data-action="toggle-chuva-sel" data-id="'+o.id+'" '+(state.chuvaSel[o.id]?'checked':'')+'>' : '';
+
+    return '<div class="item-card '+cls+(state.chuvaMode && state.chuvaSel[o.id] ? ' selecting':'')+'">'+checkbox+
+      '<div class="item-top"><div><div class="item-name">'+esc(o.servico)+'</div>'+
+      '<div class="item-tags">'+esc(o.frente||'—')+(o.responsavel? ' &middot; '+esc(o.responsavel):'')+'</div>'+
+      qtyLine+'</div><div class="badge-row">'+badges+'</div></div>'+
+      (state.chuvaMode ? '' :
+        '<div class="actions">'+
+          '<button class="ok '+(o.status==='concluido'?'on':'')+'" data-action="marcar-concluido" data-id="'+o.id+'">'+ICONS.check+' Feito</button>'+
+          '<button class="partial '+(o.status==='parcial'?'on':'')+'" data-action="toggle-partial" data-id="'+o.id+'">'+ICONS.half+' Parcial</button>'+
+          '<button class="no '+(o.status==='nao_concluido'?'on':'')+'" data-action="marcar-nao-concluido" data-id="'+o.id+'">'+ICONS.x+' Não feito</button>'+
+        '</div>'+partialBox+reasonRow
+      )+
+    '</div>';
+  }
+
+  function renderCampo(){
+    if(!state.obraId){ return '<div class="empty"><strong>Selecione uma obra</strong>Toque em uma obra acima ou crie uma nova.</div>'; }
+    var ocorrencias = state.ocorrenciasSemanaAtual;
+    var monday = mondayOf(new Date());
+    if(!ocorrencias.length){
+      return '<div class="empty"><strong>PCP desta semana ainda não publicado</strong>Peça ao gestor para montar a semana em "Gestão &rarr; Semana".</div>';
+    }
+    var total = ocorrencias.length;
+    var ok = ocorrencias.filter(function(o){return o.status==='concluido';}).length;
+    var pct = total ? Math.round(ok/total*100) : 0;
+    var locks = restricaoAbertaSet();
+
+    var html = '<div class="week-card">'+
+      '<div class="ring" style="--pct:'+pct+';--ring-color:'+ringColor(pct)+'"><div class="ring-inner"><b>'+pct+'%</b><small>PPC</small></div></div>'+
+      '<div class="week-meta"><div class="wk-title">Semana atual</div>'+
+      '<div class="wk-range">'+fmtRange(monday)+'</div>'+
+      '<div class="wk-count">'+ok+' de '+total+' pacotes concluídos</div></div>'+
+    '</div>';
+
+    html += '<div class="toolbar-row">'+
+      '<button class="btn '+(state.chuvaMode?'btn-warn':'')+'" data-action="toggle-chuva-mode">'+ICONS.rain+' '+(state.chuvaMode?'Cancelar':'Marcar dia de chuva')+'</button>'+
+      (state.chuvaMode ? '<button class="btn btn-accent" data-action="aplicar-chuva">Aplicar a '+Object.keys(state.chuvaSel).filter(function(k){return state.chuvaSel[k];}).length+' itens</button>' : '')+
+    '</div>';
+
+    html += ocorrencias.map(function(o){ return renderCampoItem(o, locks); }).join('');
+    return html;
+  }
+
+  function renderPmpTab(){
+    var locks = restricaoAbertaSet();
+    var html = '<div class="row-between"><div class="section-label" style="margin:0">Planejamento de médio prazo</div>'+
+      '<button class="btn btn-accent" data-action="toggle-add-pmp">'+ICONS.plus+' Serviço</button></div>';
+
+    if(state.showAddPmp || state.editingPmpId){
+      html += renderPmpForm(state.editingPmpId ? state.pmp.find(function(p){return p.id===state.editingPmpId;}) : null);
+    }
+    if(!state.pmp.length){
+      html += '<div class="empty small"><strong>Nenhum serviço cadastrado</strong>Cadastre os serviços previstos para os próximos meses.</div>';
+    }
+    html += state.pmp.map(function(p){
+      if(p.id === state.editingPmpId) return '';
+      return '<div class="pmp-row">'+
+        '<div class="pn">'+esc(p.servico)+'</div>'+
+        '<div class="pm">'+esc(p.frente||'—')+(p.responsavel?' &middot; '+esc(p.responsavel):'')+(p.quantidade?' &middot; '+p.quantidade+' '+esc(p.unidade||''):'')+'</div>'+
+        (p.inicio||p.fim ? '<div class="pm">'+fmtShortDate(p.inicio)+' → '+fmtShortDate(p.fim)+'</div>' : '')+
+        (locks[p.id] ? '<div class="pr">'+ICONS.lock+' Tem restrição aberta</div>' : '')+
+        '<div class="actions-inline"><button class="btn-ghost" data-action="edit-pmp" data-id="'+p.id+'">Editar</button>'+
+        '<button class="btn-ghost danger" data-action="remove-pmp" data-id="'+p.id+'">Remover</button></div>'+
+      '</div>';
+    }).join('');
+    return html;
+  }
+
+  function renderPmpForm(existing){
+    var d = existing || {};
+    return '<form class="card-plain editor" data-action="submit-pmp" data-id="'+(existing?existing.id:'')+'">'+
+      '<div><label>Serviço</label><input type="text" name="servico" required value="'+esc(d.servico)+'" placeholder="Ex: Alvenaria de vedação"></div>'+
+      '<div class="field-pair"><div><label>Frente / local</label><input type="text" name="frente" value="'+esc(d.frente)+'" placeholder="Ex: 3º pavimento"></div>'+
+      '<div><label>Responsável</label><input type="text" name="responsavel" value="'+esc(d.responsavel)+'" placeholder="Ex: equipe do João"></div></div>'+
+      '<div class="field-pair"><div><label>Quantidade total</label><input type="number" name="quantidade" value="'+(d.quantidade!=null?d.quantidade:'')+'" step="any"></div>'+
+      '<div><label>Unidade</label><input type="text" name="unidade" value="'+esc(d.unidade)+'" placeholder="m², m³, un"></div></div>'+
+      '<div class="field-pair"><div><label>Início previsto</label><input type="date" name="inicio" value="'+esc(d.inicio)+'"></div>'+
+      '<div><label>Fim previsto</label><input type="date" name="fim" value="'+esc(d.fim)+'"></div></div>'+
+      '<div class="editor-actions"><button class="btn btn-accent" type="submit">Salvar</button>'+
+      '<button class="btn" type="button" data-action="cancel-pmp-form">Cancelar</button></div>'+
+    '</form>';
+  }
+
+  function renderRestricoesTab(){
+    var html = '<div class="row-between"><div class="section-label" style="margin:0">Restrições em aberto (PMP)</div>'+
+      '<button class="btn btn-accent" data-action="toggle-add-restricao">'+ICONS.plus+' Restrição</button></div>';
+
+    if(state.showAddRestricao){
+      html += '<form class="card-plain editor" data-action="submit-restricao">'+
+        '<div><label>Serviço vinculado</label><select name="pmpId" required>'+
+          '<option value="">Selecione…</option>'+
+          state.pmp.map(function(p){ return '<option value="'+p.id+'">'+esc(p.servico)+'</option>'; }).join('')+
+        '</select></div>'+
+        '<div><label>O que está travando</label><input type="text" name="descricao" required placeholder="Ex: aguardando entrega de bloco cerâmico"></div>'+
+        '<div class="field-pair"><div><label>Responsável pela remoção</label><input type="text" name="responsavel" placeholder="Ex: setor de compras"></div>'+
+        '<div><label>Prazo</label><input type="date" name="prazo"></div></div>'+
+        '<div class="editor-actions"><button class="btn btn-accent" type="submit">Salvar</button>'+
+        '<button class="btn" type="button" data-action="cancel-restricao-form">Cancelar</button></div>'+
+      '</form>';
+    }
+
+    var abertas = state.restricoes.filter(function(r){ return r.status==='aberta'; });
+    var removidas = state.restricoes.filter(function(r){ return r.status==='removida'; });
+
+    if(!abertas.length){
+      html += '<div class="empty small">Nenhuma restrição em aberto — o caminho está livre para o PMP atual.</div>';
+    }
+    html += abertas.map(function(r){
+      return '<div class="restr-row">'+
+        '<div class="rn">'+esc(r.servico)+'</div>'+
+        '<div class="rs">'+(r.responsavel?esc(r.responsavel):'sem responsável definido')+(r.prazo?' &middot; prazo '+fmtShortDate(r.prazo):'')+'</div>'+
+        '<div class="rd">'+esc(r.descricao)+'</div>'+
+        '<div class="actions-inline"><button class="btn-ghost" data-action="resolver-restricao" data-id="'+r.id+'" data-status="removida">Marcar como removida</button></div>'+
+      '</div>';
+    }).join('');
+
+    if(removidas.length){
+      html += '<div class="section-label">Removidas recentemente</div>';
+      html += removidas.slice(0,5).map(function(r){
+        return '<div class="restr-row" style="opacity:.65"><div class="rn">'+esc(r.servico)+'</div>'+
+          '<div class="rd">'+esc(r.descricao)+'</div>'+
+          '<div class="actions-inline"><button class="btn-ghost" data-action="resolver-restricao" data-id="'+r.id+'" data-status="aberta">Reabrir</button></div></div>';
+      }).join('');
+    }
+    return html;
+  }
+
+  function renderSemanaTab(){
+    var monday = mondayOf(addDays(new Date(), state.gestWeekOffset*7));
+    var html = '<div class="row-between" style="margin-bottom:12px;">'+
+      '<div class="mode-toggle" style="margin:0;width:auto;flex:1;">'+
+        '<button data-action="set-gest-week" data-offset="0" class="'+(state.gestWeekOffset===0?'active':'')+'">Esta semana</button>'+
+        '<button data-action="set-gest-week" data-offset="1" class="'+(state.gestWeekOffset===1?'active':'')+'">Próxima semana</button>'+
+      '</div></div>';
+    html += '<div class="section-label" style="margin-top:0;">'+fmtRange(monday)+'</div>';
+
+    if(!state.pmp.length){
+      html += '<div class="empty small">Cadastre serviços no PMP antes de montar a semana.</div>';
+      return html;
+    }
+
+    var locks = restricaoAbertaSet();
+    html += '<div class="card-plain">' + state.pmp.map(function(p){
+      var sel = state.checklistSel[p.id] || {checked:false, meta:''};
+      var already = state.ocorrenciasGest.find(function(o){ return o.pmpId===p.id; });
+      var travada = already && already.status !== 'pendente';
+      return '<div class="check-row">'+
+        '<input type="checkbox" data-action="toggle-check" data-id="'+p.id+'" '+(sel.checked?'checked':'')+(travada?' disabled':'')+'>'+
+        '<div style="flex:1"><div class="cn">'+esc(p.servico)+(locks[p.id]?' '+ICONS.lock:'')+'</div>'+
+        '<div class="cm">'+esc(p.frente||'—')+(p.responsavel?' &middot; '+esc(p.responsavel):'')+'</div>'+
+        (travada
+          ? '<div class="locked-note">Já registrado em campo ('+(already.status==='concluido'?'feito':already.status==='parcial'?'parcial':'não feito')+') — não pode ser removido por aqui.</div>'
+          : '<div class="meta-qty"><input type="number" step="any" min="0" placeholder="meta" data-action="edit-meta" data-id="'+p.id+'" value="'+esc(sel.meta)+'"><span>'+esc(p.unidade||'')+'</span></div>'
+        )+
+        '</div></div>';
+    }).join('') + '</div>';
+
+    html += '<button class="btn btn-accent" style="width:100%;margin-top:6px;padding:12px 0;" data-action="montar-semana">Salvar seleção da semana</button>';
+    return html;
+  }
+
+  function renderHistoricoTab(){
+    if(!state.historicoOcorrencias.length){
+      return '<div class="empty small">Ainda não há ocorrências registradas para esta obra.</div>';
+    }
+    var porSemana = {};
+    state.historicoOcorrencias.forEach(function(o){
+      porSemana[o.semanaId] = porSemana[o.semanaId] || [];
+      porSemana[o.semanaId].push(o);
+    });
+    var semanas = Object.keys(porSemana).sort().reverse().slice(0,8);
+
+    var html = '<div class="section-label" style="margin-top:0;">PPC por semana</div>';
+    html += semanas.map(function(wid){
+      var itens = porSemana[wid];
+      var total = itens.length;
+      var ok = itens.filter(function(o){return o.status==='concluido';}).length;
+      var pct = total ? Math.round(ok/total*100) : 0;
+      var monday = new Date(wid+'T00:00:00');
+      var color = ringColor(pct);
+      return '<div class="hist-row"><div class="hist-top"><span class="range">'+fmtRange(monday)+'</span><span class="pct" style="color:'+color+'">'+pct+'% &middot; '+ok+'/'+total+'</span></div>'+
+        '<div class="track"><div class="fill" style="width:'+pct+'%;background:'+color+'"></div></div></div>';
+    }).join('');
+
+    var causas = {};
+    state.historicoOcorrencias.forEach(function(o){
+      if(o.status==='nao_concluido' && o.motivoCategoria){
+        causas[o.motivoCategoria] = (causas[o.motivoCategoria]||0)+1;
+      }
+    });
+    var causasList = Object.keys(causas).map(function(k){ return {motivo:k, n:causas[k]}; }).sort(function(a,b){return b.n-a.n;});
+    if(causasList.length){
+      var maxN = causasList[0].n;
+      html += '<div class="section-label">Causas de não conclusão (Pareto)</div>';
+      html += causasList.map(function(c){
+        var pct = Math.round(c.n/maxN*100);
+        return '<div class="pareto-row"><div class="pareto-top"><span>'+esc(c.motivo)+'</span><span class="n">'+c.n+'</span></div>'+
+          '<div class="track"><div class="fill" style="width:'+pct+'%;background:var(--bad)"></div></div></div>';
+      }).join('');
+    }
+    return html;
+  }
+
+  function renderGestao(){
+    if(!state.obraId){ return '<div class="empty"><strong>Selecione uma obra</strong>Toque em uma obra acima ou crie uma nova.</div>'; }
+    var abertasCount = state.restricoes.filter(function(r){return r.status==='aberta';}).length;
+    var html = '<div class="gest-tabs">'+
+      '<button class="'+(state.gestTab==='pmp'?'active':'')+'" data-action="set-gest-tab" data-tab="pmp">PMP</button>'+
+      '<button class="'+(state.gestTab==='restricoes'?'active':'')+'" data-action="set-gest-tab" data-tab="restricoes">Restrições'+(abertasCount?' ('+abertasCount+')':'')+'</button>'+
+      '<button class="'+(state.gestTab==='semana'?'active':'')+'" data-action="set-gest-tab" data-tab="semana">Semana</button>'+
+      '<button class="'+(state.gestTab==='historico'?'active':'')+'" data-action="set-gest-tab" data-tab="historico">Histórico (PPC)</button>'+
+    '</div>';
+    if(state.gestTab==='pmp') html += renderPmpTab();
+    else if(state.gestTab==='restricoes') html += renderRestricoesTab();
+    else if(state.gestTab==='semana') html += renderSemanaTab();
+    else html += renderHistoricoTab();
+    return html;
+  }
+
+  function render(){
+    renderObraRow();
+    document.getElementById('main').innerHTML = state.mode==='campo' ? renderCampo() : renderGestao();
+  }
+
+  // ---------- event delegation ----------
+  document.addEventListener('click', function(e){
+    var t = e.target.closest('[data-action]');
+    if(!t) return;
+    var action = t.getAttribute('data-action');
+    var oc = function(id){ return state.ocorrenciasSemanaAtual.find(function(o){return o.id===id;}) || state.ocorrenciasGest.find(function(o){return o.id===id;}); };
+
+    if(action==='set-mode'){ setMode(t.getAttribute('data-mode')); }
+    else if(action==='select-obra'){ selectObra(t.getAttribute('data-id')); render(); }
+    else if(action==='toggle-add-obra'){ state.showAddObra = !state.showAddObra; render(); setTimeout(function(){ var el=document.getElementById('novaObraInput'); if(el) el.focus(); },0); }
+    else if(action==='toggle-add-pmp'){ state.showAddPmp = !state.showAddPmp; state.editingPmpId=null; render(); }
+    else if(action==='cancel-pmp-form'){ state.showAddPmp=false; state.editingPmpId=null; render(); }
+    else if(action==='edit-pmp'){ state.editingPmpId = t.getAttribute('data-id'); state.showAddPmp=false; render(); }
+    else if(action==='remove-pmp'){ if(confirm('Remover este serviço do PMP?')) removePmp(t.getAttribute('data-id')); }
+    else if(action==='toggle-add-restricao'){ state.showAddRestricao = !state.showAddRestricao; render(); }
+    else if(action==='cancel-restricao-form'){ state.showAddRestricao=false; render(); }
+    else if(action==='resolver-restricao'){ resolverRestricao(t.getAttribute('data-id'), t.getAttribute('data-status')); }
+    else if(action==='marcar-concluido'){ var o=oc(t.getAttribute('data-id')); if(o) marcarConcluido(o); }
+    else if(action==='marcar-nao-concluido'){ var o2=oc(t.getAttribute('data-id')); if(o2) marcarNaoConcluido(o2); }
+    else if(action==='toggle-partial'){ togglePartialEdit(t.getAttribute('data-id')); }
+    else if(action==='confirm-partial'){ var id=t.getAttribute('data-id'); var o3=oc(id); var input=document.getElementById('qty-'+id); if(o3 && input) confirmarParcial(o3, input.value); }
+    else if(action==='set-motivo'){ var o4=oc(t.getAttribute('data-id')); if(o4) setMotivo(o4, t.getAttribute('data-motivo')); }
+    else if(action==='toggle-impedimento'){ var o5=oc(t.getAttribute('data-id')); if(o5) toggleImpedimento(o5); }
+    else if(action==='toggle-chuva-mode'){ toggleChuvaMode(); }
+    else if(action==='aplicar-chuva'){ aplicarChuva(); }
+    else if(action==='montar-semana'){ montarSemana(); }
+    else if(action==='set-gest-tab'){ state.gestTab = t.getAttribute('data-tab'); render(); }
+    else if(action==='set-gest-week'){ state.gestWeekOffset = Number(t.getAttribute('data-offset')); subscribeGestWeek(); render(); }
+  });
+
+  document.addEventListener('input', function(e){
+    if(e.target.matches('[data-action="edit-meta"]')){ updateChecklistMeta(e.target.getAttribute('data-id'), e.target.value); }
+  });
+  document.addEventListener('change', function(e){
+    if(e.target.matches('[data-action="toggle-check"]')){ toggleChecklist(e.target.getAttribute('data-id')); }
+    if(e.target.matches('[data-action="toggle-chuva-sel"]')){ toggleChuvaSel(e.target.getAttribute('data-id')); }
+  });
+
+  document.addEventListener('submit', function(e){
+    var t = e.target.closest('[data-action]');
+    if(!t) return;
+    e.preventDefault();
+    var action = t.getAttribute('data-action');
+    if(action==='submit-add-obra'){
+      addObra(t.querySelector('#novaObraInput').value);
+    } else if(action==='submit-pmp'){
+      var fd = new FormData(t); var data = {}; fd.forEach(function(v,k){ data[k]=v; });
+      savePmp(data, t.getAttribute('data-id') || null);
+    } else if(action==='submit-restricao'){
+      var fd2 = new FormData(t); var data2 = {}; fd2.forEach(function(v,k){ data2[k]=v; });
+      saveRestricao(data2);
+    }
+  });
+
+  init();
+</script>
+</body>
+</html>
